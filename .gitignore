@@ -2,3 +2,5 @@
 # for further information consult EVIglance AG 
 # (https://www.eviglance.com/)
 pancreatic_surgery*
+# python compiler
+__pycache__/
