@@ -26,6 +26,7 @@ def dataset_dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
 
     # return dictionary with subjects as keys and dataframes as values
     return {
-        subjects[count]: pd.read_csv(f'{directory}/{file}')
+        subjects[count]: pd.read_csv(
+            f'{directory}/{file}').convert_dtypes()
         for count, file in enumerate(files)
     }
