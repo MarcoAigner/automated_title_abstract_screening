@@ -4,7 +4,7 @@ import pandas as pd
 from typing import Dict
 
 
-def dataset_dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
+def dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
@@ -30,22 +30,3 @@ def dataset_dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
             f'{directory}/{file}').convert_dtypes()
         for count, file in enumerate(files)
     }
-
-
-def missing_values(dataframe: pd.DataFrame) -> pd.DataFrame:
-    """
-    Return a dataframe with the number of missing values for each column in a dataframe.
-
-    Args:
-        dataframe (pd.DataFrame): Dataframe to check for missing values.
-
-    Returns:
-        pd.DataFrame: Dataframe with absolute, relative and percent of missing values for each column.
-    """
-    is_missing = dataframe.isna()
-
-    absolute_missing = is_missing.sum()
-    relative_missing = is_missing.mean()
-    percent_missing = relative_missing * 100
-
-    return pd.DataFrame({'absolute': absolute_missing, 'relative': relative_missing, 'percent': percent_missing})
