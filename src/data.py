@@ -1,7 +1,7 @@
 import os
 import re
 import pandas as pd
-from typing import Dict
+from typing import Dict, List, Optional, Literal
 
 
 def dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
@@ -30,3 +30,18 @@ def dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
             f'{directory}/{file}').convert_dtypes()
         for count, file in enumerate(files)
     }
+
+
+def duplicates(df: pd.DataFrame, columns: Optional[str | List[str]], keep: Literal['first', 'last', False] = False) -> pd.DataFrame:
+    """
+    Return duplicate rows in a dataframe.
+
+    Args:
+        df (pd.DataFrame): Dataframe to check for duplicates.
+        columns (str | List[str]): Columns to check for duplicates.
+        keep (Literal['first', 'last', False]): Determines which duplicates to keep.
+
+        Returns:
+            pd.DataFrame: Dataframe with duplicate rows.
+    """
+    return df[df.duplicated(subset=columns, keep=keep)]
