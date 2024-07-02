@@ -1,11 +1,12 @@
 import os
 import re
 import pandas as pd
+import polars as pl
 from typing import Dict, List, Optional, Literal
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 
-def dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
+def dict_from_directory(directory: str, separator: Optional[str], type: Literal['pandas', 'polars'] = 'pandas') -> Dict[str, pd.DataFrame | pl.DataFrame]:
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
@@ -25,12 +26,19 @@ def dict_from_directory(directory: str) -> Dict[str, pd.DataFrame]:
     # extract subjects from filenames
     subjects = [re.search(pattern, file).group(1) for file in files]
 
-    # return dictionary with subjects as keys and dataframes as values
-    return {
-        subjects[count]: pd.read_csv(
-            f'{directory}/{file}').convert_dtypes()
-        for count, file in enumerate(files)
-    }
+    if type == 'pandas':
+        # return dictionary with subjects as keys and dataframes as values
+        return {
+            subjects[count]: pd.read_csv(
+                f'{directory}/{file}', sep=separator).convert_dtypes()
+            for count, file in enumerate(files)
+        }
+    elif type == 'polars':
+        return {
+            subjects[count]: pl.read_csv(
+                f'{directory}/{file}', separator=separator)
+            for count, file in enumerate(files)
+        }
 
 
 def duplicates(df: pd.DataFrame, columns: Optional[str | List[str]], keep: Literal['first', 'last', False] = False) -> pd.DataFrame:
