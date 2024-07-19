@@ -4,4 +4,7 @@
 pancreatic_surgery*
 # python compiler
 __pycache__/
+# work in progress code
+wip
+# testing
 comparison/
