@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Literal
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 
-def dict_from_directory(directory: str, separator: Optional[str], type: Literal['pandas', 'polars'] = 'pandas') -> Dict[str, pd.DataFrame | pl.DataFrame]:
+def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas') -> Dict[str, pd.DataFrame | pl.DataFrame]:
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
