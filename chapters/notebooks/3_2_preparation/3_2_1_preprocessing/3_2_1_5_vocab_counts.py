@@ -17,4 +17,5 @@ for subject, dataset in datasets.items():
 data_directory_vocabs = '../../../../data/05_vocabs'
 
 for subject, dataset in datasets.items():
-    dataset.to_csv(f'{data_directory_vocabs}/{subject}_vocab_counts.csv')
+    dataset.to_csv(
+        f'{data_directory_vocabs}/{subject}_vocabs.csv', index=False)
