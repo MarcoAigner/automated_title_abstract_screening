@@ -2,10 +2,15 @@
 # for further information consult EVIglance AG 
 # (https://www.eviglance.com/)
 pancreatic_surgery*
+
 # python compiler
 __pycache__/
+
 # work in progress code
 wip
-# testing
-wip/
+
+# downloaded data from pubmed fetcher
 *.db
+
+# environment variables with secrets
+.env
