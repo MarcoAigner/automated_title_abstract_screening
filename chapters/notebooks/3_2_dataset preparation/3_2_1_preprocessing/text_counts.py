@@ -9,7 +9,7 @@ import pandas as pd
 from src import data
 import os
 
-DIRECTORY = '../../../../data/03_pubmed'  # CHANGE AS NEEDED
+DIRECTORY = '../../../../data/datasets/03_pubmed'  # CHANGE AS NEEDED
 
 files = [file for file in os.listdir(DIRECTORY) if file.endswith('.csv')]
 
