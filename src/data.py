@@ -36,7 +36,7 @@ def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Li
     elif type == 'polars':
         return {
             subjects[count]: pl.read_csv(
-                f'{directory}/{file}', separator=separator)
+                f'{directory}/{file}', separator=separator).with_row_index()
             for count, file in enumerate(files)
         }
 
