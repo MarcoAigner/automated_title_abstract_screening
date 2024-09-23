@@ -1,7 +1,7 @@
 import os
 import dotenv
 import deepl
-import langdetect
+from fast_langdetect import detect
 
 
 def deepl_translate(text: str, source_lang=None, target_lang: str = 'EN-US') -> str:
@@ -41,14 +41,47 @@ def is_text_english(text: str, first_n_characters=None) -> bool:
     """
 
     try:
-        if langdetect.detect(text[:first_n_characters]) == 'en':
-            is_english = True
-        else:
-            is_english = False
 
-        return is_english
+        if text is None:
+            return None
+        else:
+            text = text.replace('\n', '')  # remove newlines
+
+            detection = detect(text[:first_n_characters])
+            detected_language = detection['language']
+
+            if detected_language == 'en':
+                is_english = True
+            else:
+                is_english = False
+
+            return is_english
     except:
         return False
+
+
+def detect_language(text: str) -> str:
+    """Detect the language of a text
+
+    Args:
+    text: str: a string to be detected
+
+    Returns:
+    str: the detected language
+    """
+    try:
+        if text is None:
+            return None
+        else:
+            # lowercase, remove newlines, and strip whitespaces
+            text = text.lower().replace('\n', '').strip()
+
+            detection = detect(text)
+            detected_language = detection['lang']
+
+            return detected_language
+    except:
+        return None
 
 
 def translate_non_english(text: str) -> str:
