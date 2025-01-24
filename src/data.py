@@ -4,6 +4,7 @@ import pandas as pd
 import polars as pl
 from typing import Dict, List, Optional, Literal
 from nltk.tokenize import word_tokenize, sent_tokenize
+import nltk
 
 
 def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas') -> Dict[str, pd.DataFrame | pl.DataFrame]:
@@ -112,6 +113,10 @@ def count_vocabulary(dataframe: pd.DataFrame, columns: List[str], length: bool =
     Returns:
         pd.DataFrame: Dataframe with vocabulary counts.
     """
+
+    # download punkt tokenizer from the natural language toolkit
+    nltk.download('punkt_tab')
+
     for column in columns:
         if length:
             dataframe[f'{column}_length'] = column_length(dataframe, column)
