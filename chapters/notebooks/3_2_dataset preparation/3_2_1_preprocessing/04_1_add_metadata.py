@@ -5,6 +5,9 @@
 # %%
 # THIS SCRIPT CALCULATES THE LENGTH,
 # SENTENCE, AND WORD COUNT FOR TITLES AND ABSTRACTS
+# AND APPENDS THESE DATA TO THE PROVIDED FILES
+# ALSO DETECTS THE LANGUAGE OF THE TITLE AND ABSTRACT
+# RUN BEFORE THE PREPROCESSING NOTEBOOK
 import pandas as pd
 import polars as pl
 from src.util import detect_language
@@ -45,5 +48,3 @@ for subject, dataset in datasets.items():
 for index, (subject, dataset) in enumerate(datasets.items()):
     dataset.write_csv(
         f'{DIRECTORY}/{files[index]}')
-
-# %%
