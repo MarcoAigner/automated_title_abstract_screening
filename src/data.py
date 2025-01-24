@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 import nltk
 
 
-def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas') -> Dict[str, pd.DataFrame | pl.DataFrame]:
+def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas', with_index: Optional[bool] = False) -> Dict[str, pd.DataFrame | pl.DataFrame]:
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
@@ -27,17 +27,26 @@ def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Li
     # extract subjects from filenames
     subjects = [re.search(pattern, file).group(1) for file in files]
 
+    # whether to include index in dataframes
+    index_value = False if not with_index else 'index'
+
     if type == 'pandas':
         # return dictionary with subjects as keys and dataframes as values
         return {
             subjects[count]: pd.read_csv(
-                f'{directory}/{file}', sep=separator).convert_dtypes()
+                f'{directory}/{file}',
+                sep=separator,
+                index_col=index_value
+            ).convert_dtypes()
             for count, file in enumerate(files)
         }
     elif type == 'polars':
         return {
             subjects[count]: pl.read_csv(
-                f'{directory}/{file}', separator=separator)
+                f'{directory}/{file}',
+                separator=separator,
+                row_index_name=index_value
+            )
             for count, file in enumerate(files)
         }
 
