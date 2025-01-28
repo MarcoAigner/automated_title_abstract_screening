@@ -27,16 +27,13 @@ def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Li
     # extract subjects from filenames
     subjects = [re.search(pattern, file).group(1) for file in files]
 
-    # whether to include index in dataframes
-    index_value = False if not with_index else 'index'
-
     if type == 'pandas':
         # return dictionary with subjects as keys and dataframes as values
         return {
             subjects[count]: pd.read_csv(
                 f'{directory}/{file}',
                 sep=separator,
-                index_col=index_value
+                index_col=False if not with_index else 'index'
             ).convert_dtypes()
             for count, file in enumerate(files)
         }
@@ -45,7 +42,7 @@ def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Li
             subjects[count]: pl.read_csv(
                 f'{directory}/{file}',
                 separator=separator,
-                row_index_name=index_value
+                row_index_name=None if not with_index else 'index'
             )
             for count, file in enumerate(files)
         }
