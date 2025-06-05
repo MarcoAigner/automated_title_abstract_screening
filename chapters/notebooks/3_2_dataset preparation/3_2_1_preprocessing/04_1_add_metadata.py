@@ -10,9 +10,22 @@
 # RUN BEFORE THE PREPROCESSING NOTEBOOK
 import pandas as pd
 import polars as pl
+
+# enable the import of custom modules
+import os, sys
+# # save the current working directory to direct the script to the project root
+current_dir = os.getcwd()
+
+# get the absolute path of the project root directory
+project_root = os.path.abspath(os.path.join(current_dir, '..', '..', '..', '..'))
+
+# add the project root to the system path
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 from src.util import detect_language
 from src import data
-import os
+
 
 DIRECTORY = '../../../../data/datasets/03_pubmed'  # CHANGE AS NEEDED
 
