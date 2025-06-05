@@ -4,9 +4,10 @@ import pandas as pd
 import polars as pl
 from typing import Dict, List, Optional, Literal
 from nltk.tokenize import word_tokenize, sent_tokenize
+import nltk
 
 
-def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas') -> Dict[str, pd.DataFrame | pl.DataFrame]:
+def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas', with_index: Optional[bool] = False) -> Dict[str, pd.DataFrame | pl.DataFrame]:
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
@@ -30,13 +31,19 @@ def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Li
         # return dictionary with subjects as keys and dataframes as values
         return {
             subjects[count]: pd.read_csv(
-                f'{directory}/{file}', sep=separator).convert_dtypes()
+                f'{directory}/{file}',
+                sep=separator,
+                index_col=False if not with_index else 'index'
+            ).convert_dtypes()
             for count, file in enumerate(files)
         }
     elif type == 'polars':
         return {
             subjects[count]: pl.read_csv(
-                f'{directory}/{file}', separator=separator)
+                f'{directory}/{file}',
+                separator=separator,
+                row_index_name=None if not with_index else 'index'
+            )
             for count, file in enumerate(files)
         }
 
@@ -112,6 +119,10 @@ def count_vocabulary(dataframe: pd.DataFrame, columns: List[str], length: bool =
     Returns:
         pd.DataFrame: Dataframe with vocabulary counts.
     """
+
+    # download punkt tokenizer from the natural language toolkit
+    nltk.download('punkt_tab')
+
     for column in columns:
         if length:
             dataframe[f'{column}_length'] = column_length(dataframe, column)

@@ -14,3 +14,6 @@ wip
 
 # environment variables with secrets
 .env
+
+# images
+*.svg
