@@ -87,17 +87,17 @@ def count_vocabulary(
         count_sentences: bool = True
 ) -> pl.DataFrame:
     """
-    Count lengt, words and sentences in columns of a dataframe.
+    Count length, words and sentences in columns of a dataframe.
 
     Args:
-        dataframe (pd.DataFrame): Dataframe to count vocabulary in.
+        dataframe (pl.DataFrame): Dataframe to count vocabulary in.
         columns (List[str]): Columns to count vocabulary in.
         length (bool): Whether to count length of columns.
         count_words (bool): Whether to count words in columns.
         count_sentences (bool): Whether to count sentences in columns.
 
     Returns:
-        pd.DataFrame: Dataframe with vocabulary counts.
+        pl.DataFrame: Dataframe with vocabulary counts.
     """
 
     # download punkt tokenizer from the natural language toolkit
@@ -107,84 +107,24 @@ def count_vocabulary(
     for column in columns:
         if length:
             dataframe = dataframe.with_columns(
-                pl.col(column)
-                .map_elements(
-                    function=lambda x: column_length(
-                        dataframe, column) if x is not None else 0,
-                    return_dtype=pl.Int64
-                )
+                pl.col(column).str.len_chars().cast(pl.Int64).alias(f'{column}_length')
             )
         if count_words:
             dataframe = dataframe.with_columns(
                 pl.col(column)
                 .map_elements(
-                    function=lambda x: word_counts(
-                        dataframe, column) if x is not None else 0,
+                    function=lambda x: len(word_tokenize(x)) if x is not None else 0,
                     return_dtype=pl.Int64
-                )
+                ).alias(f'{column}_word_count')
             )
         if count_sentences:
-            dataframe[f'{column}_sentence_count'] = sentence_counts(
-                dataframe, column)
+            dataframe = dataframe.with_columns(
+                pl.col(column)
+                .map_elements(
+                    function=lambda x: len(sent_tokenize(x)) if x is not None else 0,
+                    return_dtype=pl.Int64
+                ).alias(f'{column}_sentence_count')
+            )
 
+    print(f"Finished counting vocabulary and detecting the languages of columns: {', '.join(columns)}")
     return dataframe
-
-
-def column_length(dataframe: pl.DataFrame, column: str) -> pl.DataFrame:
-    """
-    Calculate the length of the column
-
-    Args:
-        dataframe (pl.DataFrame): Dataframe to calculate the length of the column
-        column (str): Column to calculate the length of
-
-    Returns:
-        pl.DataFrame: Dataframe with the length of the column
-    """
-
-    return dataframe.with_columns(
-        pl.col(column).str.len_chars().alias(f'{column}_length')
-    )
-
-
-def word_counts(dataframe: pl.DataFrame, column: str) -> pl.DataFrame:
-    """
-    Calculate the number of words in the column
-
-    Args:
-        dataframe (pd.DataFrame): Dataframe to calculate the number of words in the column
-        column (str): Column to calculate the number of words in
-
-    Returns:
-        pd.DataFrame: Dataframe with the number of words in the column
-    """
-
-    return dataframe.with_columns(
-        pl.col(column)
-        .map_elements(
-            function=lambda x: len(word_tokenize(x)) if x is not None else 0,
-            return_dtype=pl.Int64
-        ).alias(f'{column}_word_count')
-    )
-    # return dataframe[column].apply(lambda x: len(word_tokenize(x)) if pd.notnull(x) else 0)
-
-
-def sentence_counts(dataframe: pl.DataFrame, column: str) -> pl.DataFrame:
-    """
-    Calculate the number of sentences in the column
-
-    Args:
-        dataframe (pd.DataFrame): Dataframe to calculate the number of sentences in the column
-        column (str): Column to calculate the number of sentences in
-
-    Returns:
-        pd.DataFrame: Dataframe with the number of sentences in the column
-    """
-
-    return dataframe.with_columns(
-        pl.col(column)
-        .map_elements(
-            function=lambda x: len(sent_tokenize(x)) if x is not None else 0,
-            return_dtype=pl.Int64
-        ).alias(f'{column}_sentence_count')
-    )

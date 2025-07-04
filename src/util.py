@@ -2,6 +2,8 @@ import os
 import dotenv
 import deepl
 from fast_langdetect import detect
+from nltk import sent_tokenize
+from typing import Union, cast
 
 
 def deepl_translate(text: str, source_lang=None, target_lang: str = 'EN-US') -> str:
@@ -60,7 +62,10 @@ def is_text_english(text: str, first_n_characters=None) -> bool:
         return False
 
 
-def detect_language(text: str) -> str:
+def detect_language(
+        text: str, 
+        first_n_sentences:int = 1
+) -> Union[str, None]:
     """Detect the language of a text
 
     Args:
@@ -73,11 +78,18 @@ def detect_language(text: str) -> str:
         if text is None:
             return None
         else:
+            # Extract the first n sentences
+            sentences = sent_tokenize(text)
+            first_n = sentences[:first_n_sentences]
+            text = ' '.join(first_n)
+
             # lowercase, remove newlines, and strip whitespaces
             text = text.lower().replace('\n', '').strip()
 
             detection = detect(text)
             detected_language = detection['lang']
+
+            detected_language = cast(str, detected_language)
 
             return detected_language
     except:
