@@ -3,24 +3,42 @@ import re
 import nltk
 import pandas as pd
 import polars as pl
-from typing import Dict, List, Optional, Literal
+from typing import Dict, Mapping, List, Optional, Literal, overload
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 
+@overload
 def dict_from_directory(
         directory: str,
+        type: Literal['polars'],
         separator: str = ',',
-        type: Literal['polars', 'pandas'] = 'polars',
         with_index: Optional[bool] = False
-) -> Dict[str, pl.DataFrame | pd.DataFrame]:
+) -> Dict[str, pl.DataFrame]:
+    ...
+
+@overload
+def dict_from_directory(
+        directory: str,
+        type: Literal['pandas'],
+        separator: str = ',',
+        with_index: Optional[bool] = False
+) -> Dict[str, pd.DataFrame]:
+    ...
+
+def dict_from_directory(
+        directory: str,
+        type: Literal['polars', 'pandas'],
+        separator: str = ',',
+        with_index: Optional[bool] = False
+) -> Dict[str, pl.DataFrame] | Dict[str, pd.DataFrame]: 
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
     Args:
         directory (str): Path to directory containing .csv-files.
-        separator (str): Separator used in the .csv-files.
         type (Literal['polars', 'pandas']): Whether to return a polars or pandas dataframe.
-        with_index (Optional[bool]): Whether to use the first column as index. Defaults to False.,
+        separator (str): Separator used in the .csv-files.
+        with_index (Optional[bool]): Whether to use the first column as index. Defaults to False.
 
     Returns:
         dict: Dictionary with subjects as keys and dataframes as values.
@@ -60,6 +78,8 @@ def dict_from_directory(
             )
             for count, file in enumerate(files)
         }
+
+
 
 # TODO: Check if this function is used anywhere, if not remove it
 

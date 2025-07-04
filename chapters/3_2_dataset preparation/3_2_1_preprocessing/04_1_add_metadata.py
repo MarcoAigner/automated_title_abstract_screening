@@ -55,22 +55,15 @@ print(*datasets.keys(), sep='\n')
 # 3. ADD METADATA: COUNTS & LANGUAGE
 import polars as pl
 from src.util import detect_language
-from typing import cast
 
 # iterate over the datasets
 for subject, dataset in datasets.items():
-
-    # Ensure dataset is a polars DataFrame with explicit casting
-    dataset = cast(pl.DataFrame, dataset)
 
     # add vocabulary counts to dataframe
     dataset = data.count_vocabulary(
         dataframe=dataset,
         columns=['title', 'abstract']
     )
-
-    # Ensure it's still a polars DataFrame after count_vocabulry
-    dataset = cast(pl.DataFrame, dataset)
 
     # add language of title & abstract to dataframe
     dataset = pl.DataFrame(dataset).with_columns(
@@ -89,11 +82,7 @@ for subject, dataset in datasets.items():
 
 # %%
 # 4. WRITE THE DATASETS BACK TO CSV
-from typing import cast 
 for index, (subject, dataset) in enumerate(datasets.items()):
-
-    # Ensure Pylance knows this is a DataFrame
-    dataset = cast(pl.DataFrame, dataset)
     
     dataset.write_csv(f'{DIRECTORY}/{files[index]}')
     # dataset.write_csv(
