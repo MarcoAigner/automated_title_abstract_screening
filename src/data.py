@@ -1,34 +1,48 @@
 import os
 import re
+import nltk
 import pandas as pd
 import polars as pl
 from typing import Dict, List, Optional, Literal
 from nltk.tokenize import word_tokenize, sent_tokenize
-import nltk
 
 
-def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Literal['pandas', 'polars'] = 'pandas', with_index: Optional[bool] = False) -> Dict[str, pd.DataFrame | pl.DataFrame]:
+def dict_from_directory(
+        directory: str,
+        separator: str = ',',
+        type: Literal['polars', 'pandas'] = 'polars',
+        with_index: Optional[bool] = False
+) -> Dict[str, pl.DataFrame | pd.DataFrame]:
     """
     Return a dictionary containing dataframes from all .csv-files in a directory.
 
     Args:
         directory (str): Path to directory containing .csv-files.
+        separator (str): Separator used in the .csv-files.
+        type (Literal['polars', 'pandas']): Whether to return a polars or pandas dataframe.
+        with_index (Optional[bool]): Whether to use the first column as index. Defaults to False.,
 
     Returns:
         dict: Dictionary with subjects as keys and dataframes as values.
     """
 
-    # all .csv-files in the directory
+    # create a list of all .csv-files within the directory
     files = [file for file in os.listdir(directory) if file.endswith('.csv')]
 
-    # expects files to end with '_[annotation].csv'
+    # this regex pattern searches for the format of _[annotation].csv'
     pattern = r'^(.*)_.*$'
 
     # extract subjects from filenames
-    subjects = [re.search(pattern, file).group(1) for file in files]
+    subjects = []
+    for file in files:  # search each file for the pattern
+        match = re.search(pattern, file)
+        if match is not None:  # subject found, append it to the list
+            subjects.append(match.group(1))
+        else:
+            continue  # no subject found, continue with next file
 
+    # handle polars and pandas dataframes differently
     if type == 'pandas':
-        # return dictionary with subjects as keys and dataframes as values
         return {
             subjects[count]: pd.read_csv(
                 f'{directory}/{file}',
@@ -47,6 +61,8 @@ def dict_from_directory(directory: str, separator: Optional[str] = ',', type: Li
             for count, file in enumerate(files)
         }
 
+# TODO: Check if this function is used anywhere, if not remove it
+
 
 def duplicates(df: pd.DataFrame, columns: Optional[str | List[str]], keep: Literal['first', 'last', False] = False) -> pd.DataFrame:
     """
@@ -63,49 +79,13 @@ def duplicates(df: pd.DataFrame, columns: Optional[str | List[str]], keep: Liter
     return df[df.duplicated(subset=columns, keep=keep)]
 
 
-def column_length(dataframe: pd.DataFrame, column: str) -> pd.DataFrame:
-    """
-    Calculate the length of the column
-
-    Args:
-        dataframe (pd.DataFrame): Dataframe to calculate the length of the column
-        column (str): Column to calculate the length of
-
-    Returns:
-        pd.DataFrame: Dataframe with the length of the column
-    """
-    return dataframe[column].apply(lambda x: len(x) if pd.notnull(x) else 0)
-
-
-def word_counts(dataframe: pd.DataFrame, column: str) -> pd.DataFrame:
-    """
-    Calculate the number of words in the column
-
-    Args:
-        dataframe (pd.DataFrame): Dataframe to calculate the number of words in the column
-        column (str): Column to calculate the number of words in
-
-    Returns:
-        pd.DataFrame: Dataframe with the number of words in the column
-    """
-    return dataframe[column].apply(lambda x: len(word_tokenize(x)) if pd.notnull(x) else 0)
-
-
-def sentence_counts(dataframe: pd.DataFrame, column: str) -> pd.DataFrame:
-    """
-    Calculate the number of sentences in the column
-
-    Args:
-        dataframe (pd.DataFrame): Dataframe to calculate the number of sentences in the column
-        column (str): Column to calculate the number of sentences in
-
-    Returns:
-        pd.DataFrame: Dataframe with the number of sentences in the column
-    """
-    return dataframe[column].apply(lambda x: len(sent_tokenize(x)) if pd.notnull(x) else 0)
-
-
-def count_vocabulary(dataframe: pd.DataFrame, columns: List[str], length: bool = True, count_words: bool = True, count_sentences: bool = True) -> pd.DataFrame:
+def count_vocabulary(
+        dataframe: pl.DataFrame,
+        columns: List[str],
+        length: bool = True,
+        count_words: bool = True,
+        count_sentences: bool = True
+) -> pl.DataFrame:
     """
     Count lengt, words and sentences in columns of a dataframe.
 
@@ -123,13 +103,88 @@ def count_vocabulary(dataframe: pd.DataFrame, columns: List[str], length: bool =
     # download punkt tokenizer from the natural language toolkit
     nltk.download('punkt_tab')
 
+    # compute the length, word and sentence counts for each specified column
     for column in columns:
         if length:
-            dataframe[f'{column}_length'] = column_length(dataframe, column)
+            dataframe = dataframe.with_columns(
+                pl.col(column)
+                .map_elements(
+                    function=lambda x: column_length(
+                        dataframe, column) if x is not None else 0,
+                    return_dtype=pl.Int64
+                )
+            )
         if count_words:
-            dataframe[f'{column}_word_count'] = word_counts(dataframe, column)
+            dataframe = dataframe.with_columns(
+                pl.col(column)
+                .map_elements(
+                    function=lambda x: word_counts(
+                        dataframe, column) if x is not None else 0,
+                    return_dtype=pl.Int64
+                )
+            )
         if count_sentences:
             dataframe[f'{column}_sentence_count'] = sentence_counts(
                 dataframe, column)
 
     return dataframe
+
+
+def column_length(dataframe: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Calculate the length of the column
+
+    Args:
+        dataframe (pl.DataFrame): Dataframe to calculate the length of the column
+        column (str): Column to calculate the length of
+
+    Returns:
+        pl.DataFrame: Dataframe with the length of the column
+    """
+
+    return dataframe.with_columns(
+        pl.col(column).str.len_chars().alias(f'{column}_length')
+    )
+
+
+def word_counts(dataframe: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Calculate the number of words in the column
+
+    Args:
+        dataframe (pd.DataFrame): Dataframe to calculate the number of words in the column
+        column (str): Column to calculate the number of words in
+
+    Returns:
+        pd.DataFrame: Dataframe with the number of words in the column
+    """
+
+    return dataframe.with_columns(
+        pl.col(column)
+        .map_elements(
+            function=lambda x: len(word_tokenize(x)) if x is not None else 0,
+            return_dtype=pl.Int64
+        ).alias(f'{column}_word_count')
+    )
+    # return dataframe[column].apply(lambda x: len(word_tokenize(x)) if pd.notnull(x) else 0)
+
+
+def sentence_counts(dataframe: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Calculate the number of sentences in the column
+
+    Args:
+        dataframe (pd.DataFrame): Dataframe to calculate the number of sentences in the column
+        column (str): Column to calculate the number of sentences in
+
+    Returns:
+        pd.DataFrame: Dataframe with the number of sentences in the column
+    """
+
+    return dataframe.with_columns(
+        pl.col(column)
+        .map_elements(
+            function=lambda x: len(sent_tokenize(x)) if x is not None else 0,
+            return_dtype=pl.Int64
+        ).alias(f'{column}_sentence_count')
+    )
