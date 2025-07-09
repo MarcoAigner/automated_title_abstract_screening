@@ -1,0 +1,34 @@
+name: title_abstract_screening
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - ipykernel # jupyter notebook kernel
+  - ipywidgets # interactive widgets and visualizations
+  - pandas # dataframes
+  - polars # faster dataframes
+  - matplotlib # plotting
+  - seaborn # plotting
+  - scikit-learn # machine learning
+  - imbalanced-learn # pipelines with resampling
+  - numpy # numerical operations
+  - tqdm # progress bars
+  - python-dotenv-with-cli # read .env files
+  - bs4 # for parsing html
+  - num2words # converting numbers to words
+  - pyarrow # functionality for arrow C++ libraries
+  - nltk # natural language toolkit
+  - wordcloud # visualizing word frequencies
+  - pip:
+    - pyalex # for accessing the OpenAlex API
+    - metapub # for accessing the PubMed API
+    - deepl # for accessing the DeepL API
+    - fast-langdetect # language detection
+  
+
+
+variables:
+  PYTHONPATH: \automated_title_abstract_screening\src
+  # create an api key as described in 
+  # https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
+  NCBI_API_KEY: YOURAPIKEY
