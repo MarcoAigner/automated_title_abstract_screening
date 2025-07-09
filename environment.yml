@@ -1,4 +1,4 @@
-name: test
+name: title_abstract_screening
 channels:
   - conda-forge
 dependencies:
