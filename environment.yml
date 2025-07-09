@@ -15,6 +15,7 @@ dependencies:
   - tqdm # progress bars
   - python-dotenv-with-cli # read .env files
   - bs4 # for parsing html
+  - num2words # converting numbers to words
   - pyarrow # functionality for arrow C++ libraries
   - nltk # natural language toolkit
   - wordcloud # visualizing word frequencies
