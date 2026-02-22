@@ -24,6 +24,7 @@ dependencies:
     - metapub # for accessing the PubMed API
     - deepl # for accessing the DeepL API
     - fast-langdetect # language detection
+    - confidenceinterval # confidence intervals for f1 scores using the delta method
   
 
 
